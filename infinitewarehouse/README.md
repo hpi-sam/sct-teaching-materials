@@ -15,4 +15,7 @@ Besides the modeling and behavior optimization, this example can be used to have
 
 The related teaching materials are split in a straightforward assignment text and an accompanying design document. The latter document presents the design of an object oriented software system to control an autonomous robot. At its center is an active class `DriveSystem`, whose behavior is to be modeled with a statechart. It contains diagrams of the software systemas well as complete specifications for all methods of `DriveSystem` (which serve as inputs for modeling the statechart) and of it’s related classes (which serve as outputs or operations).
 
+
+**Note that as of now, the teachig materials for this environment are available in German language only.**
+
 **We provide both a PDF version of the documents (as example) and the LaTeX sourcecode (for customization).**

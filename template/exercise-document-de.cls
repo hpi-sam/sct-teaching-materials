@@ -41,6 +41,7 @@
 \usepackage{hyperref}
 \usepackage{rotating}
 \usepackage{mwe}
+\usepackage{ifthen}
 
 
 
@@ -59,14 +60,39 @@
 \colorlet{mygray4}{mygray!20!white}							% 20
 
 
+%% %% %%%%%%%%%%%%%%%%%%%%%%%%% %% %%
+%% %%     DEFINE PROPERTIES     %% %%
+%% %% %%%%%%%%%%%%%%%%%%%%%%%%% %% %%
+\newcommand{\docLectureName}{}
+\newcommand{\docLectureTime}{}
+\newcommand{\docLectureHost}{}
+\newcommand{\docAssignmentNumber}{}
+\newcommand{\docAssignmentTitle}{}
+\newcommand{\docTitle}{}
+
+
+
+%% %% %%%%%%%%%%%%%%% %% %%
+%% %%     HELPERS     %% %%
+%% %% %%%%%%%%%%%%%%% %% %%
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\emptyOrNotEmpty}[3]{%
+	\ifthenelse{\equal{#1}{}}{#2}{#3}
+}
+
 
 
 %% %% %%%%%%%%%%%%%%%%%%%%%%%%%%%% %% %%
 %% %%     PAGE LAYOUT SETTINGS     %% %%
 %% %% %%%%%%%%%%%%%%%%%%%%%%%%%%%% %% %%
 \clearscrheadfoot
-\lohead{\normalfont
-	\textbf{\docAssignmentTitle{}: \docTitle{}} \newline 
+\lohead{%
+	\normalfont \textbf{%
+		\emptyOrNotEmpty{\docTitle}{%
+			Aufgabe \docAssignmentNumber{}: \docAssignmentTitle{}
+		}{%
+			\docAssignmentTitle{}: \docTitle{}
+		}}\newline 
 	\small{\docLectureName{} -- \docLectureTime{} -- \docLectureHost{}}
 }
 \rohead{\includegraphics[width=0.12\textwidth]{logo}}
@@ -74,6 +100,7 @@
 \newcommand{\points}[1]{\textit{(#1 Punkte)}}
 
 % \renewcommand{\thesection}{\arabic{section}}
+
 
 
 
@@ -86,10 +113,16 @@
 \setlength{\parskip}{10pt}
 
 
-%% %% %%%%%%%%%%%%%%% %% %%
-%% %%     HELPERS     %% %%
-%% %% %%%%%%%%%%%%%%% %% %%
-\newcommand{\red}[1]{{\color{red}#1}}
+
+
+%% %% %%%%%%%%%%%%%%%%%%%%% %% %%
+%% %%     SOLUTION MODE     %% %%
+%% %% %%%%%%%%%%%%%%%%%%%%% %% %%
+\newtoggle{is_solution}
+\newcommand{\solution}[1]{
+	\iftoggle{is_solution}{#1}{}
+}
+
 
 
 %% %% %%%%%%%%%%%%%%%%%%%%% %% %%
@@ -117,12 +150,13 @@
 	\end{tcolorbox}
 }
 
-\newcommand{\usecaseinfo}[2]{%
-	\begin{tcolorbox}[title=\textbf{Charakterisierende Informationen zum #1}]
-		\begin{small}#2\end{small}
-	\end{tcolorbox}
+\newcommand{\solutionbox}[1]{
+	\solution{
+		\begin{tcolorbox}[title=\textbf{Musterlösung}]
+			\begin{small}#1\end{small}
+		\end{tcolorbox}
+	}
 }
-
 
 
 %% %% %%%%%%%%%%%%%%%%%%% %% %%
@@ -137,9 +171,13 @@
 	\begin{center}
 		\huge Aufgabe \docAssignmentNumber: \textbf{  \docAssignmentTitle}
 	\end{center}
-	\begin{center}
-		\Huge \textbf{ \docTitle}
-	\end{center}
-	\vspace*{1mm}
 
+	\emptyOrNotEmpty{\docTitle{}}{}{
+		\begin{center} \Huge \textbf{ \docTitle} \end{center}%	
+	}
+
+
+	\solutionbox{\textbf{Hinweis:} Diese Lösung ist eine der möglichen Lösungen.
+		Sie soll bei der Bearbeitung von Aufgaben und bei der Klausurvorbereitung Unterstützung bieten ohne dabei notwendigerweise komplett und vollständig richtig zu sein.}
+	\vspace*{1mm}
 }
