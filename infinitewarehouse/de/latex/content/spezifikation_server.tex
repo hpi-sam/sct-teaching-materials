@@ -1,0 +1,102 @@
+%!TEX root = ../../statemachineprojekt_entwurf.tex
+
+\section{Server}
+\label{sec:server}
+
+Auf Seiten des Servers soll das Verhalten von Instanzen der Klasse \texttt{RobotHandler} durch einen UML Zustandsautomaten beschrieben werden. 
+Die dafür relevanten Klassen werden im Folgenden beschrieben und sind zudem in \autoref{fig:server_class} dargestellt.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1\textwidth]{server_classes}
+	\caption{UML Klassendiagramm mit einer Auswahl an relevanten Klassen für die Server-Software. Die rot markierte aktive Klasse soll durch eine UML State Machine umgesetzt werden. Die rot markierte Aufzählung ist mit Inhalten zu füllen.}
+	\label{fig:server_class}
+\end{figure}
+
+
+\subsection{Steuerung eines Roboters mit \texttt{RobotHandler}}
+\label{subsec:server_roborhandler}
+
+{\color{hpired} \textbf{Hinweis} Dieser Abschnitt beschreibt den ersten für diese Aufgabe zu modellierenden Zustandsautomaten im Stile einer abgeschlossenen Aufgabenstellung. Die übrigen Unterabschnitte \ref{subsec:robot_dispatch} bis \ref{subsec:robot_remote} liefern Hintergrundinformationen zu den verfügbaren Schnittstellen.}
+
+Ein Objekt der Klasse \texttt{RobotHandler} repräsentiert einen sich im Dienst befindlichen Roboter. Das Objekt läuft dann in einem eigenen, unabhängigen Ausführungskontext. Da der Roboter im Betrieb zusätzlich immer wieder bestimmte Phasen durchläuft ist ein Zustandsdiagramm die geeignetste Form der Darstellung des Verhaltens von \texttt{RobotHandler} Objekten.
+
+Wird ein Roboter neu in den Dienst genommen, beginnt er immer \emph{voll aufgeladen} an einer der Batterieladepositionen einer Abfertigungsstation.
+Die Attribute \texttt{robotID}, \texttt{stationID} und \texttt{chargerID} sind bereits beim Start gesetzt.
+Mittels der ebenfalls bereits gesetzten Attribute \texttt{location} und \texttt{remote} ist die Schnittstellen der Komponenten \texttt{ServerGridManagement} und \texttt{ServerCommunication} abrufbar.
+
+Von der Batterieladeposition aus soll der Roboter nun angewiesen werden, sich an die Schlange zur Beladeposition anzustellen. Dazu muss der \texttt{RobotHandler} zuerst beim \texttt{RobotDispatcher} (Attribut \texttt{dispatcher}) mittels \texttt{requestEnqueueAtStation(...)} beantragen, dass der Weg freigegeben wird.
+Wenn der \texttt{RobotDispatcher} dies ablehnt, wird nach 5 Sekunden erneut angefragt.
+Bei Freigabe wird sofort ein entsprechender Fahrbefehl über \texttt{IServerOpRemoteCall} an den mit \texttt{robotID} identifizierten Roboter verschickt.
+Die genaue Zielposition dazu wird über \texttt{ILoation} mit der Methode über \texttt{getQueuePositionAtStation(...)} abgefragt.
+
+Meldet der Roboter die Ankunft an der Zielposition (Ende der Warteschlange) wird der \texttt{RobotDispatcher} mit \texttt{reportEnqueueAtStation(...)} informiert.
+Währenddessen erhält der Roboter den Fahrbefehl zur entsprechenden Beladeposition (erster Platz in der Warteschlange), deren Koordinaten über \texttt{getLoadingPositionAtStation(...)} erfragt werden.
+
+Wenn der Roboter seine Ankunft an der Beladeposition meldet, wird auf den Scanner gewartet.
+Dieser meldet alle erkannten Pakete. Wenn eines an der Abfertigungsstation erkannt wird, an der sich der Roboter gerade befindet, bedeutet das, dass ein Paket auf diesem Roboter abgelegt wurde.
+Die Meldung liefert auch einen Code, mit dem über \texttt{ILocation} mit der Methode \texttt{getUnloadPositionForCode(...)} angefragt werden kann, wohin das entsprechende Paket geliefert werden soll. 
+Der Roboter wird nun über das Netzwerk mit der entsprechenden Fahrt beauftragt. Zeitgleich wird dass Verlassen der Station mit \texttt{reportLeaveStation(...)} an den \texttt{RobotDispatcher} gemeldet.
+
+Sobald der Roboter die erfolgreiche Ankunft inklusive Abwurf der Ladung gemeldet hat, wird beim \texttt{RobotDispatcher} mittels \texttt{requestNextStation(...)} eine Station angefragt, die der Roboter anfahren soll.
+Wenn dem \texttt{RobotHandler} bekannt ist, dass die Batterie geladen werden muss, beantragt er dabei eine Station mit freiem Ladeplatz.
+Der Roboter wird dann schnellstmöglich zur Ankunftsposition (\texttt{getArrivalPositionAtStation(...)}) der zugewiesenen Abfertigungsstation geschickt, welche als Ankunftsort fungiert.
+
+Wenn der Roboter das Eintreffen an der Ankunftsposition meldet \emph{und} Aufladung benötigt, kann über die Methode \texttt{requestFreeChargerAtStation(...)} eine Batterieladeposition beantragt werden. Bei Misserfolg kommt eine \texttt{0} zurück und es wird fünf Sekunden gewartet. Die Position kann über \texttt{getChargerPositionAtStation(...)} erfragt werden.
+Ein entsprechender Fahrbefehl wird dem Roboter übermittelt. Wenn der Roboter seine Ankunft an der Batterieladeposition meldet wird das noch dem \texttt{RobotDispatcher} mitgeteilt. 
+Danach wartet das \texttt{RobotHandler} Objekt auf eine Meldung des Roboters, dass die Aufladung abgeschlossen wurde.
+
+Falls der Roboter gar keinen Bedarf an Aufladung hat und noch an der Ankunftsposition steht \emph{oder} nachdem die Aufladung abgeschlossen wurde, wird er direkt zum Ende der Warteschlange geschickt. 
+Der Prozess beginnt damit erneut wie oben im Text beschrieben.
+
+
+
+\subsection{Verwaltung der Stationen und Roboter mittels \texttt{RobotDispatcher}}
+\label{subsec:robot_dispatch}
+
+Die Klasse \texttt{RobotDispatcher} führt eine Liste mit den bekannten Standorten aller Roboter. Vor allem wird dabei festgehalten, welche Roboter unterwegs sind und welche sind an welcher Abfertigungsstation aufhalten.
+
+Dabei behält \texttt{RobotDispatcher} stets die Auslastung aller Abfertigungsstationen um Blick und kann Roboter nach Bedarf disponieren. Ziel ist, dass an allen Stationen die Warteschlagen gut gefüllt sind \emph{und} das aufladungsbedürfte Roboter immer an Stationen mit verfügbaren Ladeposition disponiert werden können.
+Dabei wird auch sichergestellt, dass nicht mehrere Roboter gleichzeitig im Umfeld der Batterieladepositionen unterwegs sind, um hier Kollisionen auszuschließen.
+Es stehen genug Batterieladepositionen für alle Roboter zur Verfügung.
+
+Um diese Funktionalität zu realisieren werden grundsätzliche Informationen zur Infrastruktur über \texttt{IGrid} abgefragt. Weitere Daten müssen von den \texttt{RobotHandler} Objekten direkt geliefert werden.
+Die zu meldenden Ereignisse sind 
+\begin{enumerate*}
+	\item das Betreten der Warteschlange,
+	\item das Verlassen der Warteschlange und
+	\item das Erreichen einer Batterieladeposition.
+\end{enumerate*}
+Die Freigabe des \texttt{RobotDispatcher} muss für die Fahrt zum Ende Warteschlange eingeholt werden.
+Zusätzlich ist \texttt{RobotDispatcher} für das Zuweisen von Stationen und Batterieladeposition zu, womit in letzterem Fall auch die Wegfreigabe verbunden ist.
+
+
+
+\subsection{Zugriff auf Infrastrukturdaten mittels \texttt{ILocation}}
+
+Die Funktionalität der Komponente \texttt{ServerGridManagement} ist über das Interface \texttt{ILocation} teilweise verfügbar. Die Schnittelle ermöglicht es einerseits, zu einer gegebenen Station (identifiziert über eine \texttt{id}) die genauen Koordination von Ankunftsposition, Batterieladepositionen, Warteschlangenposition und Beladeposition zu erfahren.
+Zusätzlich kann angefragt werden, wohin ein Paket transportiert werden soll (mit \texttt{getUnloadPositionForCode(...)}).
+
+
+
+\subsection{Meldungen des Scanners an \texttt{IScanner}}
+
+Die Klasse \texttt{RobotHandler} implementiert das Interface \texttt{IScanner} und erhält darüber Benachrichtigungen der Scanner, die in der serverseitigen Komponente \texttt{Scanner} verwaltet werden. \texttt{Scanner} versendet eine \texttt{scan(...)} Nachricht immer dann, wenn einer der Scanner an einer Station ein Paket erkennt. Der sichtbare Code, der den Zielort des Paketes bestimmt, wird mit gemeldet.
+
+Sämtliche Scanner senden immer an \emph{alle} \texttt{RobotHandler} Objekte. Die Objekte müssen also erkennen, welche Nachricht für sie bestimmt ist. Es kann davon ausgegangen werden, dass \texttt{scan(...)} Nachrichten der \texttt{Scanner} Komponente vom \texttt{RobotHandler} automatisch verworfen werden, wenn sie im aktuellen Zustand nicht akzeptiert werden.
+Um Fehler zu vermeiden wiederholt der Scanner das Senden von \texttt{scan(...)} periodisch. 
+
+
+
+
+\subsection{Kommunikation über \texttt{IServerOpRemoteCall} und \texttt{IServerOpFromRemote}}
+\label{subsec:robot_remote}
+
+Zur Kommunikation bietet \texttt{ServerCommunication} die Schnittstellen \texttt{IServerOpRemoteCall} und \texttt{IServerOpFromRemote}.
+
+\texttt{IServerOpRemoteCall} nimmt über \texttt{send(...)} zu versendende Nachrichten an und übermittelt diese an den Roboter, dessen \texttt{id} übergeben wird.
+Die Nachricht selbst besteht aus einem Literal aus der Enumeration \texttt{Command} und einer \texttt{Position}, die aber auch \texttt{null} sein kann.
+
+Das Gegenstück, die Schnittstelle \texttt{IServerOpFromRemote}, ermöglicht den Empfang von Nachrichten, die von Roboter-Seite verschickt wurden (siehe \autoref{subsec:robot_remote}). Da eingehende Nachrichten von \texttt{RobotHandler} Objekten empfangen werden, wird die Schnittelle von \texttt{RobotHandler} implementiert.
+Wie beim Scanner werden \emph{alle} eingehenden Nachrichten an \emph{alle} \texttt{RobotHandler} Instanzen zugestellt, sodass diese lokal filtern müssen.
+Nachrichten, die keine Transition auslösen (können), verfallen.

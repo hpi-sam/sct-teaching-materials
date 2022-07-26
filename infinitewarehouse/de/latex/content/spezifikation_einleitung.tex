@@ -1,0 +1,35 @@
+%!TEX root = ../spezifikation.tex
+
+
+\section*{Hinweise zum Entwurfsdokument}
+
+Es handelt sich bei diesem Dokument um die \textbf{stark gekürzte} Fassung eines objektorientierten Entwurfs, wie in der Vorlesung vorgestellt und im vorangegangenen Projekt behandelt. 
+
+Der Entwurf beginnt mit \autoref{sec:struktur} (Struktur der Komponenten).
+Sämtliche für \docAssignmentTitle{} nicht direkt benötigten Informationen wurden herausgelassen.
+
+
+
+
+\section*{Einleitung}
+
+Es soll die Steuersoftware für Roboter in einer automatischen Paketsortieranlage entworfen werden.
+Diese Steuersoftware soll dabei den Transport von Paketen von Abfertigungsstationen (kurz Stationen), an denen die Roboter beladen werden, zu verschiedenen Abwurfschächten gewährleisten. 
+Ebenfalls zu berücksichtigen sind hier die Rückfahrten der Roboter zu den Stationen sowie Fahrten innerhalb der Stationen. 
+
+Es werden über das Netzwerk Fahraufträge an die Roboter übermittelt. 
+Die Aufträge beinhalten immer eine Zielkoordinate sowie die Art des Auftrags.
+Die Steuersoftware der Roboter realisiert daraufhin autonom (d.h. nur auf Basis der lokalen Sensorinformationen) die Anfahrt zur gegebenen Koordinate.
+Bei manchen Arten von Aufträgen muss zudem nach Ankunft noch eine Aktion durchgeführt werden (z.B. das Abladen eines Pakets).
+
+Das Fahrverhalten der Roboter orientiert sich an der deutschen Straßenverkehrsordnung.
+
+
+% Mögliche Aufträge sind
+% \begin{enumerate*}[a)]
+% 	\item das Anfahren eines Abwurfschacht zwecks Abwurf der Ladung
+% 	\item die Rückfahrt zu einer Station
+% 	\item die Fahrt innerzu einer Station
+% \end{enumerate*}.
+
+

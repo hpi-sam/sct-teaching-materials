@@ -1,0 +1,57 @@
+%!TEX root = ../aufgabenstellung.tex
+
+\section{Anforderungen}
+\label{sec:teile}
+
+Zum Bestehen des Projekts ist eine ausreichende Bearbeitung durch die Gruppe erforderlich,
+was durch Überprüfung des Modellierungsergebnisses sowie bei einem Review kontrolliert wird.
+
+
+
+
+\subsection{Modellierung}
+\label{subsec:mod}
+
+Es soll ein Statechart modelliert werden, das das Verhalten der Klasse \texttt{DriveSystem} und damit das Fahrverhalten eines Roboters spezifiziert. 
+Das erwartete Verhalten des Statecharts bei den verschiedenen Eingaben ist im Unterabschnitt 7.1 des beiliegenden Entwurfsdokumentes beschrieben.
+
+Für die Modellierung soll \enquote{YAKINDU Statechart Tools} benutzt werden. 
+Es ist bereits eine Datei \texttt{infinitewarehouse\_drivesystem.ysc} mit leerem Statechart aber vollständigem Definitionsbereich vorgegeben. 
+Der Definitionsbereich darf nicht verändert werden, lediglich interne Ereignisse und Variablen dürfen hinzugefügt werden. 
+
+Der aus dem Statechart generierte Java-Quelltext soll alle mit dem Simulator gegebenen Tests erfüllen. 
+Das Statechart soll möglichst übersichtlich sein. 
+Alle Zustände des Statecharts sollen aussagekräftig benannt werden.
+
+
+\submissioninfo{Statechart}{Die Datei \texttt{infinitewarehouse\_drivesystem.ysc} sowie ggf. weiterere, referenzierte \texttt{.ysc} Dateien sind bis \textbf{\red{DATUM+UHRZEIT}} in einem zip-Archiv im Moodle abzugeben.}
+
+
+
+\subsection{Vortragsfolien}
+
+Vor dem erstabeiteten Statechart sind auch die Vortragsfolien zur Vorstellung und Diskussion des Projektergebnis abzugeben.
+Die Folien sollen für einen Leser, der mit der konkreten Aufgabenstellung und dem Konzept von Zustandsdiagrammen vertraut ist, selbsterklärend sein.
+Die Folien müssen Seitennummern haben.
+
+\submissioninfo{Vortragsfolien}{Die Vortragsfolien sind sind bis \textbf{\red{DATUM+UHRZEIT}} als PDF-Datei im Moodle abzugeben.}
+
+
+
+\subsection{Review}
+Das Review hat eine Dauer von etwa 30-45 Minuten, wobei in den ersten 10-15 Minuten zwei Mitglieder der Gruppe die Ergebnisse präsentieren sollen. Im Anschluss an den Vortrag wird Feedback zu den präsentierten Projektergebnissen gegeben sowie werden Fragen gestellt. Dabei können und sollen alle Gruppenmitglieder Antworten geben und mitdiskutieren.
+
+Beim Review sollen insbesondere folgende Inhalte behandelt werden:
+\begin{enumerate}
+	\setlength\topsep{-1em}
+	\setlength\itemsep{-0.5em}
+	\item Vorstellung des erstellten Statecharts (siehe \autoref{subsec:mod}). 
+	Dabei soll das State\-chart selbst sowie das durch das Statechart realisierte Fahrverhalten gezeigt werden. 
+	Der Fokus soll dabei auf den komplizierten Fahrsituationen und den entsprechenden Lösungsstrategien liegen.
+	\item Diskussion von (derzeit) nicht vermeidbaren Kollisionen oder Deadlocks (falls solche vorhanden sind). 
+	Dazu sollen denkbare Lösungen skizziert und, falls nötig, Vorschläge für Änderungen an der Projektumgebung gemacht werden.
+\end{enumerate}
+
+\eventinfo{Review}{Das Review findet am \textbf{\red{DATUM+UHRZEIT}} während der Vorlesung statt.}
+
+
